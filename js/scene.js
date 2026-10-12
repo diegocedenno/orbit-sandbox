@@ -262,6 +262,8 @@
     function mark(label, xKm, yKm) {
       var x = xKm * scale;
       var y = -yKm * scale;
+      // Un ápside fuera del encuadre no se rotula: el dato sigue en la telemetría.
+      if (Math.abs(x) > w / 2 - 6 || Math.abs(y) > h / 2 - 6) return;
       var d = Math.sqrt(x * x + y * y) || 1;
       var cos = x / d;
       var sin = y / d;
@@ -680,6 +682,7 @@
       });
       ghosts = [];
       selectedId = null;
+      counter = 0; // la numeración vuelve a SAT-01
       refreshStatic();
       stop();
       draw();

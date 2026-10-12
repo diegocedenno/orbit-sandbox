@@ -127,6 +127,10 @@
   opacity: 0;
 }
 
+.sat.is-leaving {
+  pointer-events: none;
+}
+
 .sat-hit {
   fill: transparent;
 }
@@ -335,9 +339,17 @@
   color: var(--text-2);
 }
 
-.pill--end:hover {
-  color: var(--alert);
-  border-color: var(--alert);
+/* Con el dedo, :hover se queda pegado tras el toque: el realce es solo para ratón */
+@media (hover: hover) {
+  .pill--end:hover {
+    color: var(--alert);
+    border-color: var(--alert);
+  }
+
+  .presets .pill:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
 }
 
 .icon-play,
@@ -435,11 +447,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-}
-
-.presets .pill:hover {
-  color: var(--accent);
-  border-color: var(--accent);
 }
 
 .fields {
