@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Plutón con su corazón claro">
+  <defs>
+    <clipPath id="pluto-disc">
+      <circle cx="60" cy="60" r="52"/>
+    </clipPath>
+    <radialGradient id="pluto-light" cx="36%" cy="30%" r="80%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.16"/>
+      <stop offset="0.55" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#0d1117" stop-opacity="0.5"/>
+    </radialGradient>
+  </defs>
+  <circle cx="60" cy="60" r="52" fill="#c9a27e"/>
+  <g clip-path="url(#pluto-disc)">
+    <!-- Cthulhu Macula: franja oscura ecuatorial -->
+    <path d="M2 70 C18 60 30 74 44 68 C52 65 54 76 46 84 C34 94 14 92 2 86 Z" fill="#8a6548" opacity="0.75"/>
+    <!-- Casquete norte, algo más rojizo -->
+    <path d="M22 18 C40 6 80 6 98 20 C84 26 70 22 58 26 C44 30 32 24 22 18 Z" fill="#b98a66" opacity="0.7"/>
+    <!-- Tombaugh Regio: el corazón -->
+    <path d="M74 50 C80 42 93 44 95 55 C97 66 86 76 76 88 C66 79 55 72 54 62 C53 52 66 46 74 50 Z" fill="#efe3d3"/>
+    <path d="M74 50 C70 58 70 68 76 88 C66 79 55 72 54 62 C53 52 66 46 74 50 Z" fill="#fbf5ec" opacity="0.55"/>
+    <!-- Cráteres -->
+    <circle cx="34" cy="44" r="4" fill="#a67d5c" opacity="0.6"/>
+    <circle cx="48" cy="34" r="2.2" fill="#a67d5c" opacity="0.5"/>
+    <circle cx="40" cy="98" r="3" fill="#a67d5c" opacity="0.5"/>
+    <circle cx="92" cy="86" r="2.4" fill="#a67d5c" opacity="0.45"/>
+    <circle cx="60" cy="60" r="52" fill="url(#pluto-light)"/>
+  </g>
+</svg>

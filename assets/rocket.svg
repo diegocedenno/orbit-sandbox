@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 96" width="48" height="96" role="img" aria-label="Cohete blanco con llama naranja">
+  <!-- Llama: dos capas para poder animarlas por separado (clases flame-outer / flame-inner) -->
+  <g class="rocket-flame">
+    <path class="flame-outer" d="M17 66 C17 78 21 86 24 94 C27 86 31 78 31 66 Z" fill="#ff7a3d"/>
+    <path class="flame-inner" d="M20.5 66 C20.5 73 22.5 78 24 83 C25.5 78 27.5 73 27.5 66 Z" fill="#ffd9a8"/>
+  </g>
+  <!-- Aletas -->
+  <path d="M14 46 L5 64 L5 69 L15 63 Z" fill="#c9a27e"/>
+  <path d="M34 46 L43 64 L43 69 L33 63 Z" fill="#c9a27e"/>
+  <!-- Tobera -->
+  <path d="M18 62 H30 L28.5 68 H19.5 Z" fill="#8b949e"/>
+  <!-- Cuerpo -->
+  <path d="M24 3 C33 13 36 27 36 42 V60 C36 62 34.5 63 33 63 H15 C13.5 63 12 62 12 60 V42 C12 27 15 13 24 3 Z" fill="#f4f6f8"/>
+  <!-- Sombra lateral del cuerpo -->
+  <path d="M24 3 C33 13 36 27 36 42 V60 C36 62 34.5 63 33 63 H27 V42 C27 26 26 13 24 3 Z" fill="#cfd6dd"/>
+  <!-- Banda -->
+  <path d="M12 50 H36 V54 H12 Z" fill="#c9a27e"/>
+  <!-- Ventana -->
+  <circle cx="24" cy="31" r="6" fill="#161b22" stroke="#8b949e" stroke-width="1.5"/>
+  <path d="M20.5 29.5 A4 4 0 0 1 24.5 27" fill="none" stroke="#58a6ff" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
