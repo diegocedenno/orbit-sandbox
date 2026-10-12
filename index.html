@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>orbit-sandbox — lanza satélites alrededor de Plutón</title>
+  <meta name="description" content="Sandbox de órbitas: arrastra para lanzar satélites alrededor de Plutón y mira la órbita real que resulta, con su apoapsis, periapsis y periodo.">
+  <meta name="theme-color" content="#0d1117">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <script src="assets/theme.js"></script>
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="assets/starfield.js"></script>
+  <script defer src="js/physics.js"></script>
+  <script defer src="js/format.js"></script>
+  <script defer src="js/scene.js"></script>
+  <script defer src="js/main.js"></script>
+</head>
+<body>
+  <div class="page">
+    <header class="page-head">
+      <a class="brand" href="./" aria-label="orbit-sandbox, inicio">
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <ellipse class="brand-orbit" cx="16.5" cy="16" rx="12.5" ry="9" fill="none" stroke-width="1.5" stroke-dasharray="1.5 3.2" stroke-linecap="round" transform="rotate(-28 16.5 16)"/>
+          <circle cx="8.8" cy="20.1" r="4.2" fill="#c9a27e"/>
+          <path class="brand-aim" d="M22.2 6.4 29.6 8" fill="none" stroke-width="1.6" stroke-linecap="round"/>
+          <circle class="brand-sat" cx="22.2" cy="6.4" r="2.4"/>
+        </svg>
+        orbit-sandbox
+      </a>
+      <p class="console" id="status" role="status">status: <b>listo para lanzar</b></p>
+      <button type="button" class="theme-toggle" data-theme-toggle role="switch" aria-checked="false" aria-label="Modo claro">
+        <span class="theme-toggle-thumb" aria-hidden="true">
+          <svg class="theme-toggle-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" fill="currentColor"/></svg>
+          <svg class="theme-toggle-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </span>
+      </button>
+    </header>
+
+    <main class="layout">
+      <h1 class="sr-only">orbit-sandbox: lanza satélites alrededor de Plutón</h1>
+
+      <section class="stage" id="stage" aria-label="Escena orbital">
+        <div class="stage-view" id="view">
+          <canvas class="stage-trails" id="trails" aria-hidden="true"></canvas>
+          <svg class="stage-svg" id="sky" role="img" aria-label="Plutón, a escala, con los satélites lanzados y sus estelas. Arrastra en el espacio para lanzar uno; el formulario y la lista de satélites ofrecen lo mismo con teclado.">
+            <defs>
+              <clipPath id="os-disc"><circle cx="60" cy="60" r="52"/></clipPath>
+              <radialGradient id="os-light" cx="36%" cy="30%" r="80%">
+                <stop offset="0" stop-color="#ffffff" stop-opacity="0.16"/>
+                <stop offset="0.55" stop-color="#ffffff" stop-opacity="0"/>
+                <stop class="pluto-shade" offset="1" stop-opacity="0.5"/>
+              </radialGradient>
+            </defs>
+
+            <g id="orbits"></g>
+
+            <!-- Plutón (pluto.svg): 52 unidades de radio; scene.js lo escala a 1188,3 km -->
+            <g id="pluto">
+              <circle cx="60" cy="60" r="52" fill="#c9a27e"/>
+              <g clip-path="url(#os-disc)">
+                <path d="M2 70 C18 60 30 74 44 68 C52 65 54 76 46 84 C34 94 14 92 2 86 Z" fill="#8a6548" opacity="0.75"/>
+                <path d="M22 18 C40 6 80 6 98 20 C84 26 70 22 58 26 C44 30 32 24 22 18 Z" fill="#b98a66" opacity="0.7"/>
+                <path d="M74 50 C80 42 93 44 95 55 C97 66 86 76 76 88 C66 79 55 72 54 62 C53 52 66 46 74 50 Z" fill="#efe3d3"/>
+                <path d="M74 50 C70 58 70 68 76 88 C66 79 55 72 54 62 C53 52 66 46 74 50 Z" fill="#fbf5ec" opacity="0.55"/>
+                <circle cx="34" cy="44" r="4" fill="#a67d5c" opacity="0.6"/>
+                <circle cx="48" cy="34" r="2.2" fill="#a67d5c" opacity="0.5"/>
+                <circle cx="40" cy="98" r="3" fill="#a67d5c" opacity="0.5"/>
+                <circle cx="92" cy="86" r="2.4" fill="#a67d5c" opacity="0.45"/>
+                <circle cx="60" cy="60" r="52" fill="url(#os-light)"/>
+              </g>
+            </g>
+
+            <g id="fx"></g>
+            <g id="marks"></g>
+            <g id="sats"></g>
+
+            <g id="aim" class="aim" hidden>
+              <path class="aim-path" id="aim-path"/>
+              <line class="aim-line" id="aim-line"/>
+              <path class="aim-head" id="aim-head" d="M0 0 -9 -4.5 -9 4.5Z"/>
+              <circle class="aim-origin" id="aim-origin" r="3"/>
+              <text class="aim-label" id="aim-label" text-anchor="middle" dominant-baseline="central"></text>
+            </g>
+          </svg>
+
+          <p class="stage-hud stage-hud--tl console" id="clock-line">t + <b id="clock">0 min</b></p>
+          <p class="stage-hud stage-hud--tl console" id="still-note" hidden>movimiento reducido · órbitas completas</p>
+          <p class="stage-hud stage-hud--bl console" id="hint">arrastra para lanzar</p>
+          <p class="stage-scale" id="scale" aria-hidden="true"><i></i><span>2000 km</span></p>
+        </div>
+
+        <div class="stage-bar" role="group" aria-label="Controles de tiempo">
+          <button type="button" class="pill" id="pause" aria-pressed="false">
+            <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path class="icon-pause" d="M2.5 1.5h2.4v9H2.5zM7.1 1.5h2.4v9H7.1z"/><path class="icon-play" d="M3 1.2 10.2 6 3 10.8Z"/></svg>
+            <span id="pause-text">pausa</span>
+          </button>
+          <fieldset class="speed" id="speed">
+            <legend class="sr-only">Velocidad de la simulación</legend>
+            <label><input type="radio" name="speed" value="1" checked><span>×1</span></label>
+            <label><input type="radio" name="speed" value="4"><span>×4</span></label>
+            <label><input type="radio" name="speed" value="16"><span>×16</span></label>
+          </fieldset>
+          <button type="button" class="pill pill--end" id="clear">limpiar</button>
+        </div>
+      </section>
+
+      <section class="launch panel" aria-label="Lanzamiento con datos">
+        <div class="launch-head">
+          <p class="console" id="reference">circular <b>0,697</b> · escape <b>0,986 km/s</b></p>
+          <div class="presets" role="group" aria-label="Lanzamientos predefinidos a la altitud indicada">
+            <button type="button" class="pill" data-preset="circular" aria-label="Lanzar en órbita circular">circular</button>
+            <button type="button" class="pill" data-preset="elliptic" aria-label="Lanzar en órbita elíptica">elíptica</button>
+            <button type="button" class="pill" data-preset="escape" aria-label="Lanzar en trayectoria de escape">escape</button>
+            <button type="button" class="pill" data-preset="suborbital" aria-label="Lanzar en trayectoria suborbital">suborbital</button>
+          </div>
+        </div>
+
+        <form class="fields" id="launch-form" novalidate>
+          <label class="field" for="alt">
+            <span class="field-label">Altitud <span class="sr-only">sobre la superficie, en kilómetros</span></span>
+            <span class="field-box">
+              <input id="alt" name="alt" type="text" inputmode="decimal" value="600" autocomplete="off" spellcheck="false">
+              <span class="field-unit" aria-hidden="true">km</span>
+            </span>
+          </label>
+          <label class="field" for="speed-in">
+            <span class="field-label">Velocidad <span class="sr-only">en kilómetros por segundo</span></span>
+            <span class="field-box">
+              <input id="speed-in" name="speed-in" type="text" inputmode="decimal" value="0,70" autocomplete="off" spellcheck="false">
+              <span class="field-unit" aria-hidden="true">km/s</span>
+            </span>
+          </label>
+          <label class="field" for="angle">
+            <span class="field-label">Ángulo <span class="sr-only">de la velocidad sobre el horizonte, en grados: 0 es horizontal, 90 hacia arriba</span></span>
+            <span class="field-box">
+              <input id="angle" name="angle" type="text" inputmode="decimal" value="0" autocomplete="off" spellcheck="false">
+              <span class="field-unit" aria-hidden="true">°</span>
+            </span>
+          </label>
+          <button type="submit" class="btn btn--accent" id="launch">lanzar</button>
+        </form>
+      </section>
+
+      <div class="side">
+        <section class="telemetry panel" aria-labelledby="tm-name">
+          <div class="tm-head">
+            <span class="console">telemetría</span>
+            <span class="chip" id="tm-state">sin datos</span>
+          </div>
+          <h2 id="tm-name">Sin satélite</h2>
+          <dl class="tm-list">
+            <div><dt>periapsis</dt><dd id="tm-pe">—</dd></div>
+            <div><dt>apoapsis</dt><dd id="tm-ap">—</dd></div>
+            <div><dt>periodo</dt><dd id="tm-period">—</dd></div>
+            <div><dt>excentricidad</dt><dd id="tm-e">—</dd></div>
+            <div><dt>semieje mayor</dt><dd id="tm-a">—</dd></div>
+            <div><dt>energía específica</dt><dd id="tm-energy">—</dd></div>
+            <div class="tm-now"><dt>altitud ahora</dt><dd id="tm-alt">—</dd></div>
+            <div class="tm-now"><dt>velocidad ahora</dt><dd id="tm-speed">—</dd></div>
+          </dl>
+        </section>
+
+        <section class="fleet panel" aria-label="Satélites en vuelo">
+          <p class="console">satélites: <b id="count">0/12</b></p>
+          <ul class="fleet-list" id="fleet"></ul>
+          <p class="fleet-empty" id="fleet-empty">Ninguno en vuelo. Arrastra en el espacio o elige un lanzamiento predefinido.</p>
+        </section>
+      </div>
+
+      <p class="sr-only" id="announce" aria-live="polite"></p>
+    </main>
+
+    <footer class="page-foot">
+      <span>orbit-sandbox · serie Plutón</span>
+      <span>hecho por <a href="https://github.com/diegocedenno">diegocedenno</a> · MIT</span>
+    </footer>
+  </div>
+</body>
+</html>

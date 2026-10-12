@@ -1,0 +1,835 @@
+/* orbit-sandbox — estilos propios. Los tokens y la base viven en assets/tokens.css */
+
+.layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
+  grid-template-rows: 1fr auto;
+  grid-template-areas:
+    "stage side"
+    "launch side";
+  gap: var(--s-4) var(--s-5);
+}
+
+/* Cada satélite lleva uno de tres tonos de la paleta: sonda, estela y punto de
+   la lista comparten color. */
+.tint-0 {
+  --tint: var(--accent);
+}
+
+.tint-1 {
+  --tint: var(--cold);
+}
+
+.tint-2 {
+  --tint: var(--text);
+}
+
+/* ---------- marca ---------- */
+
+.brand-orbit {
+  stroke: var(--text-2);
+}
+
+.brand-aim {
+  stroke: var(--alert);
+}
+
+.brand-sat {
+  fill: var(--text);
+}
+
+/* ---------- escena ---------- */
+
+.stage {
+  grid-area: stage;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  /* Llena el alto de la ventana: cabecera, pie y el panel de lanzamiento suman 316 px */
+  min-height: clamp(340px, calc(100dvh - 316px), 780px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.stage-view {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  cursor: crosshair;
+  /* El arrastre es del lanzamiento, no del scroll de la página */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.stage-trails,
+.stage-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.stage-trails {
+  pointer-events: none;
+}
+
+/* Sombra del limbo de Plutón: se funde con el fondo en oscuro; sobre papel es
+   una sombra cálida y más leve. */
+.pluto-shade {
+  stop-color: #0d1117;
+}
+
+:root[data-theme="light"] .pluto-shade {
+  stop-color: #5b4330;
+  stop-opacity: 0.38;
+}
+
+/* Órbita completa del satélite elegido, punteada bajo su estela */
+.sel-orbit {
+  stroke: var(--border-strong);
+  stroke-dasharray: 2 7;
+  stroke-width: 1.25;
+}
+
+/* Con movimiento reducido no hay estelas: cada satélite muestra su órbita entera */
+.sat-orbit {
+  fill: none;
+  stroke: var(--tint);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.55;
+  transition: opacity 300ms var(--ease-out);
+}
+
+.sat-orbit.is-selected {
+  opacity: 1;
+}
+
+.sat-orbit.is-leaving,
+.sat-orbit.is-entering {
+  opacity: 0;
+}
+
+/* ---------- satélites ---------- */
+
+.sat {
+  cursor: pointer;
+  transition: opacity 300ms var(--ease-out);
+}
+
+.sat.is-leaving,
+.sat.is-entering {
+  opacity: 0;
+}
+
+.sat-hit {
+  fill: transparent;
+}
+
+.sat-ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease-out);
+}
+
+.sat.is-selected .sat-ring {
+  opacity: 1;
+}
+
+/* Sonda blanca con paneles del tono del satélite; en modo claro la sostiene
+   un contorno de tinta. */
+.sat-panel {
+  fill: var(--tint);
+}
+
+.sat-body {
+  fill: var(--rocket);
+  stroke: var(--rocket-line);
+  stroke-width: 1;
+}
+
+/* Destello del impacto: un anillo que se abre y se apaga */
+.flash {
+  fill: none;
+  stroke: var(--alert);
+  stroke-width: 1.5;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  pointer-events: none;
+}
+
+/* Ápsides del satélite elegido */
+.mark-dot {
+  fill: var(--bg);
+  stroke: var(--text);
+  stroke-width: 1.25;
+}
+
+.mark-text,
+.aim-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  fill: var(--text);
+  stroke: var(--bg);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  paint-order: stroke;
+  pointer-events: none;
+}
+
+/* ---------- puntería ---------- */
+
+.aim {
+  --aim: var(--accent);
+  pointer-events: none;
+}
+
+.aim[data-kind="impact"] {
+  --aim: var(--alert);
+}
+
+.aim[data-kind="escape"] {
+  --aim: var(--cold);
+}
+
+.aim-path {
+  fill: none;
+  stroke: var(--aim);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 6;
+  stroke-linecap: round;
+}
+
+.aim-line {
+  stroke: var(--text);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.aim-head,
+.aim-origin {
+  fill: var(--text);
+}
+
+.aim-label {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ---------- rótulos de la escena ---------- */
+
+.stage-hud {
+  position: absolute;
+  left: var(--s-4);
+  margin: 0;
+  pointer-events: none;
+}
+
+.stage-hud--tl {
+  top: var(--s-3);
+}
+
+.stage-hud--bl {
+  right: var(--s-4);
+  bottom: var(--s-3);
+}
+
+.stage-scale {
+  position: absolute;
+  right: var(--s-4);
+  bottom: var(--s-3);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1;
+  color: var(--text-2);
+  pointer-events: none;
+  transition: opacity var(--t-fast) var(--ease-out);
+}
+
+.stage-scale i {
+  display: block;
+  width: var(--w, 40px);
+  height: 5px;
+  border: 1px solid var(--text-2);
+  border-top: 0;
+}
+
+.stage.is-aiming .stage-scale {
+  opacity: 0;
+}
+
+/* ---------- controles de tiempo ---------- */
+
+.stage-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 var(--s-3);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--text);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color var(--t-fast) var(--ease-out),
+    background-color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out);
+}
+
+/* Toque cómodo (44 px de alto) sin agrandar el botón a la vista */
+.pill::after {
+  content: "";
+  position: absolute;
+  inset: -6px -2px;
+}
+
+.pill:hover {
+  border-color: var(--border-strong);
+}
+
+.pill:focus-visible {
+  border-radius: 999px;
+}
+
+.pill:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pill svg {
+  fill: currentColor;
+}
+
+.pill--end {
+  margin-left: auto;
+  color: var(--text-2);
+}
+
+.pill--end:hover {
+  color: var(--alert);
+  border-color: var(--alert);
+}
+
+.icon-play,
+#pause[aria-pressed="true"] .icon-pause {
+  display: none;
+}
+
+#pause[aria-pressed="true"] .icon-play {
+  display: inline;
+}
+
+#pause[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.speed {
+  display: inline-flex;
+  min-width: 0;
+  margin: 0;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.speed:disabled {
+  opacity: 0.5;
+}
+
+.speed label {
+  position: relative;
+  display: block;
+}
+
+.speed input {
+  position: absolute;
+  inset: -9px 0;
+  width: 100%;
+  height: calc(100% + 18px);
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.speed:disabled input {
+  cursor: not-allowed;
+}
+
+.speed span {
+  display: grid;
+  place-items: center;
+  min-width: 42px;
+  height: 26px;
+  padding: 0 var(--s-2);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  transition:
+    color var(--t-fast) var(--ease-out),
+    background-color var(--t-fast) var(--ease-out);
+}
+
+.speed input:checked + span {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.speed input:focus-visible + span {
+  outline: 2px solid var(--cold);
+  outline-offset: 2px;
+}
+
+/* ---------- lanzamiento con datos ---------- */
+
+.launch {
+  grid-area: launch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  min-width: 0;
+  padding: var(--s-3) var(--s-4) var(--s-4);
+}
+
+.launch-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-4);
+}
+
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.presets .pill:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: var(--s-3);
+}
+
+.fields .btn {
+  min-width: 112px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.field-label {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+.field-box {
+  position: relative;
+  display: block;
+}
+
+.field input {
+  width: 100%;
+  height: 44px;
+  padding: 0 46px 0 var(--s-3);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  font-variant-numeric: tabular-nums;
+  transition: border-color var(--t-fast) var(--ease-out);
+}
+
+.field input:hover {
+  border-color: var(--border-strong);
+}
+
+.field input:focus-visible {
+  outline-offset: 1px;
+  border-radius: var(--radius);
+}
+
+.field input[aria-invalid="true"] {
+  border-color: var(--alert);
+}
+
+.field-unit {
+  position: absolute;
+  top: 50%;
+  right: var(--s-3);
+  transform: translateY(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-2);
+  pointer-events: none;
+}
+
+.console.is-error,
+.console.is-error b {
+  color: var(--alert);
+}
+
+/* ---------- telemetría ---------- */
+
+.side {
+  grid-area: side;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  min-width: 0;
+}
+
+.telemetry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-4);
+}
+
+.tm-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  min-height: 24px;
+}
+
+.chip {
+  padding: 2px 10px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.chip[data-kind="orbit"] {
+  color: var(--accent);
+}
+
+.chip[data-kind="impact"] {
+  color: var(--alert);
+}
+
+.chip[data-kind="escape"] {
+  color: var(--cold);
+}
+
+.telemetry h2 {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.telemetry h2 small {
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  color: var(--text-2);
+}
+
+.tm-list {
+  display: grid;
+  margin: var(--s-1) 0 0;
+}
+
+.tm-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  min-height: 27px;
+  border-top: 1px solid var(--border);
+}
+
+.tm-list dt {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+.tm-list dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tm-list dd small {
+  margin-right: var(--s-1);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  color: var(--text-2);
+}
+
+/* Las dos lecturas en vivo se separan de los elementos fijos de la órbita */
+.tm-list > .tm-now dd {
+  color: var(--accent);
+}
+
+/* ---------- lista de satélites ---------- */
+
+.fleet {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4);
+}
+
+.fleet-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fleet-list:empty {
+  display: none;
+}
+
+.fleet-empty {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+.sat-row {
+  container-type: inline-size;
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition:
+    opacity 300ms var(--ease-out),
+    background-color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out);
+}
+
+.sat-row:hover {
+  border-color: var(--border-strong);
+}
+
+.sat-row.is-selected {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.sat-row.is-entering {
+  opacity: 0;
+}
+
+.sat-pick {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 34px;
+  padding: 0 0 0 10px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  text-align: left;
+  white-space: nowrap;
+  color: var(--text);
+  touch-action: manipulation;
+}
+
+.sat-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tint);
+}
+
+.sat-kind {
+  color: var(--text-2);
+}
+
+/* Sobre el fondo teñido de la fila elegida, el gris secundario no llega a AA */
+.sat-row.is-selected .sat-kind:not([data-kind="impact"]):not([data-kind="escape"]),
+.sat-row.is-selected .sat-extra {
+  color: var(--text);
+}
+
+.sat-kind[data-kind="impact"] {
+  color: var(--alert);
+}
+
+.sat-kind[data-kind="escape"] {
+  color: var(--cold);
+}
+
+/* El periodo solo cabe cuando la fila es ancha (lista a una columna) */
+.sat-extra {
+  display: none;
+  margin-left: auto;
+  color: var(--text-2);
+}
+
+@container (min-width: 250px) {
+  .sat-extra {
+    display: inline;
+  }
+}
+
+.sat-remove {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius);
+  color: var(--text-2);
+  touch-action: manipulation;
+  transition: color var(--t-fast) var(--ease-out);
+}
+
+.sat-remove:hover {
+  color: var(--alert);
+}
+
+.sat-remove svg {
+  width: 10px;
+  height: 10px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+@media (pointer: coarse) {
+  .sat-pick {
+    height: 44px;
+  }
+
+  .sat-remove {
+    width: 44px;
+  }
+}
+
+/* ---------- pantallas estrechas ---------- */
+
+@media (max-width: 860px) {
+  .page {
+    gap: var(--s-4);
+  }
+
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas:
+      "stage"
+      "launch"
+      "side";
+    gap: var(--s-4);
+  }
+
+  .stage {
+    min-height: 0;
+    height: clamp(280px, 39dvh, 440px);
+  }
+
+  .fleet {
+    flex: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .fields {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-2);
+  }
+
+  .fields .btn {
+    grid-column: 1 / -1;
+  }
+
+  /* Los cuatro presets en una sola fila, a partes iguales */
+  .presets {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .presets .pill {
+    padding: 0;
+    font-size: 0.6875rem;
+    letter-spacing: 0;
+  }
+
+  .field input {
+    padding: 0 38px 0 10px;
+    font-size: 0.875rem;
+  }
+
+  .field-unit {
+    right: var(--s-2);
+  }
+}
+
+@media (max-width: 420px) {
+  .fleet-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 380px) {
+  .presets {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
